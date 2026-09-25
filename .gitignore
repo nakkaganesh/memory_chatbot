@@ -1,12 +1,15 @@
 # Virtual environment
 .venv/
 
-# Environment variables / API keys
+# Environment variables
 .env
 
-# Python cache
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Testing
+.pytest_cache/
 
 # macOS
 .DS_Store
