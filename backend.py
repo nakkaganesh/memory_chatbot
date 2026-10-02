@@ -17,10 +17,6 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 load_dotenv()
 
 
-# ---------------------------------------------------------
-# LLM
-# ---------------------------------------------------------
-
 def create_llm():
     """Create the OpenAI chat model."""
 
@@ -43,9 +39,6 @@ def create_llm():
 llm = create_llm()
 
 
-# ---------------------------------------------------------
-# Few-shot examples
-# ---------------------------------------------------------
 
 examples = [
     {
@@ -89,9 +82,7 @@ few_shot_prompt = FewShotChatMessagePromptTemplate(
 )
 
 
-# ---------------------------------------------------------
-# Main prompt
-# ---------------------------------------------------------
+
 
 chat_prompt = ChatPromptTemplate.from_messages(
     [
@@ -110,9 +101,7 @@ chat_prompt = ChatPromptTemplate.from_messages(
 )
 
 
-# ---------------------------------------------------------
-# Short-term memory trimming
-# ---------------------------------------------------------
+
 
 trimmer = trim_messages(
     max_tokens=1000,
@@ -123,9 +112,6 @@ trimmer = trim_messages(
 )
 
 
-# ---------------------------------------------------------
-# Conversation chain
-# ---------------------------------------------------------
 
 base_chain = (
     RunnablePassthrough.assign(
