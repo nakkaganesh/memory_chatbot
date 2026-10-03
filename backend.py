@@ -2,30 +2,27 @@ import os
 from operator import itemgetter
 
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
 from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.messages import trim_messages
-from langchain_core.prompts import (
-    ChatPromptTemplate,
-    FewShotChatMessagePromptTemplate,
-    MessagesPlaceholder,
-)
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_openai import ChatOpenAI
 
 
+# Load environment variables from .env
 load_dotenv()
 
 
 def create_llm():
-    """Create the OpenAI chat model."""
+    """Create and configure the OpenAI chat model."""
 
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
         raise ValueError(
             "OPENAI_API_KEY not found. "
-            "Create a .env file and add your API key."
+            "Create a .env file and add your OpenAI API key."
         )
 
     return ChatOpenAI(
@@ -36,73 +33,27 @@ def create_llm():
     )
 
 
+# Create the language model
 llm = create_llm()
 
 
-
-examples = [
-    {
-        "input": "Who are you?",
-        "output": (
-            "I'm your personal assistant. I help you with questions about "
-            "AI, Data Science, and Data Engineering courses, placements, "
-            "and careers."
-        ),
-    },
-    {
-        "input": "I'm from a non-IT background. Can I learn AI?",
-        "output": (
-            "Absolutely. Many BEPEC learners come from non-IT backgrounds. "
-            "We start from fundamentals and take you to job-ready, step by "
-            "step. No prior coding is needed to begin."
-        ),
-    },
-    {
-        "input": "How long does the course take?",
-        "output": (
-            "It depends on the track and your pace, but most learners become "
-            "job-ready in a few focused months. Pick a track and commit to "
-            "consistent daily practice."
-        ),
-    },
-]
-
-
-example_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("human", "{input}"),
-        ("ai", "{output}"),
-    ]
-)
-
-
-few_shot_prompt = FewShotChatMessagePromptTemplate(
-    example_prompt=example_prompt,
-    examples=examples,
-)
-
-
-
-
+# Prompt used by the chatbot
 chat_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            "You are a helpful and friendly AI assistant built by "
-            "BEPEC Solutions. You remember the ongoing conversation "
-            "and answer clearly and concisely. If you do not know "
-            "something, say so honestly instead of making things up. "
-            "Match the tone and style of the examples.",
+            "You are a helpful AI assistant. "
+            "Answer the user's questions clearly and concisely. "
+            "Use the conversation history when it is relevant. "
+            "If you do not know something, say so rather than making it up.",
         ),
-        few_shot_prompt,
         MessagesPlaceholder(variable_name="history"),
         ("human", "{input}"),
     ]
 )
 
 
-
-
+# Keep only recent messages when the conversation becomes large
 trimmer = trim_messages(
     max_tokens=1000,
     strategy="last",
@@ -112,7 +63,7 @@ trimmer = trim_messages(
 )
 
 
-
+# Main LangChain pipeline
 base_chain = (
     RunnablePassthrough.assign(
         history=itemgetter("history") | trimmer
@@ -123,19 +74,19 @@ base_chain = (
 
 
 def create_memory():
-    """Create a fresh short-term in-memory conversation history."""
+    """Create an empty short-term conversation history."""
 
     return InMemoryChatMessageHistory()
 
 
 def run_conversation(input_text, memory, session_id="default"):
     """
-    Run one conversational turn.
+    Run one conversational turn using short-term memory.
 
     Args:
         input_text: Current user message.
         memory: In-memory chat history for the current session.
-        session_id: Identifier for the conversation session.
+        session_id: Unique identifier for the conversation session.
 
     Returns:
         Tuple containing the assistant response and updated memory.
@@ -160,7 +111,9 @@ def run_conversation(input_text, memory, session_id="default"):
 
         return result.content, memory
 
-    except Exception:
+    except Exception as error:
+        print(f"Chatbot error: {error}")
+
         return (
             "Sorry, I couldn't process your request. "
             "Please try again.",

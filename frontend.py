@@ -5,10 +5,6 @@ import streamlit as st
 import backend
 
 
-# ---------------------------------------------------------
-# Page configuration
-# ---------------------------------------------------------
-
 st.set_page_config(
     page_title="Short-Term Memory Chatbot",
     page_icon="💬",
@@ -23,9 +19,6 @@ st.caption(
 )
 
 
-# ---------------------------------------------------------
-# Initialize session state
-# ---------------------------------------------------------
 
 if "memory" not in st.session_state:
     st.session_state.memory = backend.create_memory()
@@ -37,9 +30,6 @@ if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
 
 
-# ---------------------------------------------------------
-# Sidebar
-# ---------------------------------------------------------
 
 with st.sidebar:
     st.header("Controls")
@@ -69,18 +59,11 @@ with st.sidebar:
     )
 
 
-# ---------------------------------------------------------
-# Display conversation history
-# ---------------------------------------------------------
-
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["text"])
 
 
-# ---------------------------------------------------------
-# User input
-# ---------------------------------------------------------
 
 input_text = st.chat_input("Ask me anything...")
 
